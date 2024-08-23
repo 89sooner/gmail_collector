@@ -1,6 +1,10 @@
 const { google } = require("googleapis");
 const cheerio = require("cheerio");
-const parsers = require("./parsers");
+const {
+  saveNaverbooking,
+  parseNaverbooking,
+} = require("./parsers/naverbooking");
+const { saveYeogi, parseYeogi } = require("./parsers/yeogi");
 
 async function getEmails(auth, label, maxEmails = 10) {
   const gmail = google.gmail({ version: "v1", auth });
@@ -76,13 +80,17 @@ async function getEmails(auth, label, maxEmails = 10) {
 
         switch (label.name) {
           case "pension/naverbooking":
-            reservationInfo = parsers.naverbooking($);
+            reservationInfo = parseNaverbooking($);
+            await saveNaverbooking(reservationInfo);
             break;
           case "pension/airbnb":
             reservationInfo = parsers.airbnb($);
             break;
           case "pension/yeogi":
-            reservationInfo = parsers.yeogi($);
+            const emailBody = $.html(); // 이메일 본문 전체를 문자열로 가져옵니다.
+            const reservationInfo = parseYeogi(emailBody);
+            // await saveYeogi(reservationInfo);
+
             break;
           case "pension/yanolja":
             reservationInfo = parsers.yanolja($);

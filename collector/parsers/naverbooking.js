@@ -1,3 +1,43 @@
+const { Pool } = require("pg");
+
+// PostgreSQL 연결 설정
+const pool = new Pool({
+  user: "postgres",
+  host: "localhost",
+  database: "pension_db",
+  password: "postgres",
+  port: 5432,
+});
+
+async function saveNaverbooking(reservationInfo) {
+  const query = `
+    INSERT INTO bookings (
+      reservation_number, name, application_date, reservation_product,
+      usage_date, payment_status, payment_method, payment_amount, source
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    `;
+
+  const values = [
+    reservationInfo.reservationNumber,
+    reservationInfo.name,
+    reservationInfo.applicationDate,
+    reservationInfo.reservationProduct,
+    reservationInfo.usageDate,
+    reservationInfo.paymentStatus,
+    reservationInfo.paymentMethod,
+    reservationInfo.paymentAmount,
+    "naverbooking",
+  ];
+
+  try {
+    await pool.query(query, values);
+    console.log("Booking saved to the database");
+  } catch (error) {
+    console.error("Error saving booking to the database:", error);
+  }
+}
+
 function parseNaverbooking($) {
   const reservationInfo = {};
   reservationInfo.name = $("td:contains('예약자명')").next().text().trim();
@@ -29,4 +69,4 @@ function parseNaverbooking($) {
   return reservationInfo;
 }
 
-module.exports = parseNaverbooking;
+module.exports = { saveNaverbooking, parseNaverbooking };
